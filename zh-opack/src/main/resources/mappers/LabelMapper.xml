@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zh.dictionary.mapper.LabelMapper">
+
+    <sql id="Base_Column_List">
+        `id`,`pid`,`type`,`key`,`val`,`code`,`desc`
+    </sql>
+
+    <resultMap id="getMap" type="com.zh.pojo.LabelInfos"/>
+
+
+
+    <!--根据父id查询子节点-->
+    <select id="getById"  parameterType="Long" resultMap="getMap">
+        select
+        `id`,`pid`,`key`,`val`,`code`
+        from dictionary
+        <where>
+            pid= #{id}
+        </where>
+    </select>
+
+
+    <select id="getLabelInfos" parameterType="java.util.Map" resultMap="labelTree">
+        select
+        <include refid="Base_Column_List"/>,id as parent
+        from dictionary
+        WHERE 1=1
+        <if test="id != null">
+            AND id = #{id}
+        </if>
+
+        <if test="pid != null">
+            AND pid = #{pid}
+        </if>
+
+        <if test="type != null">
+            AND `type` = #{type}
+        </if>
+
+        <if test="key != null">
+            AND `key` = #{key}
+        </if>
+
+        <if test="val != null">
+            AND val = #{val}
+        </if>
+
+        <if test="code != null">
+            AND code = #{code}
+        </if>
+
+    </select>
+
+    <!--根据父id查询子节点-->
+    <select id="selectChildrenById"  parameterType="Long" resultMap="labelTree">
+        select
+        `id`,`pid`,`key`,`val`,`code`,id as parent
+        from dictionary
+        <where>
+            pid= #{id}
+        </where>
+    </select>
+
+
+    <!-- 初始化字典树 -->
+    <resultMap id="dictTree" type="com.zh.pojo.LabelInfos">
+        <id column="id" property="id" javaType="java.lang.Long" jdbcType="INTEGER"/>
+        <result column="pid" property="pid" javaType="java.lang.Long" jdbcType="INTEGER"/>
+
+        <result column="type" property="type" javaType="java.lang.String" jdbcType="VARCHAR"/>
+        <result column="key" property="key" javaType="java.lang.String" jdbcType="VARCHAR"/>
+        <result column="val" property="val" javaType="java.lang.String" jdbcType="VARCHAR"/>
+        <result column="code" property="code" javaType="java.lang.String" jdbcType="VARCHAR"/>
+
+        <collection column="parent" property="labelTrees" ofType="com.zh.pojo.LabelInfos" javaType="java.util.ArrayList"
+                    select="com.zh.dictionary.mapper.DistrictMapper.selectChildrenById"/>
+    </resultMap>
+
+</mapper>
